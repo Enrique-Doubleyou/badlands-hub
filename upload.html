@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bild-Upload — Gravel Dossier</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23100D09%22/><path d=%22M10 70 L35 30 L55 55 L70 20 L90 70 Z%22 stroke=%22%23E7B23D%22 stroke-width=%226%22 fill=%22none%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .upload-shell{ max-width:480px; margin:0 auto; padding:2.4rem var(--edge) 4rem; }
+  .drop{
+    border:1px dashed var(--line); padding:2.4rem 1.4rem; text-align:center;
+    display:flex; flex-direction:column; align-items:center; gap:.9rem;
+  }
+  .drop input[type=file]{ display:none; }
+  .drop-label{
+    font-family:var(--font-mono); font-size:.78rem; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  select{
+    width:100%; background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    font-family:var(--font-mono); font-size:.85rem; padding:.7em .8em; margin-bottom:1.2rem;
+  }
+  #preview{ width:100%; aspect-ratio:4/3; object-fit:cover; display:none; margin-bottom:1rem; border:1px solid var(--line); }
+  .status-msg{ font-family:var(--font-mono); font-size:.82rem; margin-top:1rem; min-height:1.4em; }
+  .status-msg.ok{ color:var(--ok); }
+  .status-msg.err{ color:var(--rust); }
+  progress{ width:100%; height:6px; accent-color:var(--tape); margin-top:1rem; display:none; }
+  details.setup{ margin-top:3rem; border:1px solid var(--line); padding:1.2rem 1.4rem; }
+  details.setup summary{ cursor:pointer; font-family:var(--font-mono); font-size:.8rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim); }
+  details.setup ol{ color:var(--text-dim); padding-left:1.2rem; }
+  details.setup code{ background:var(--panel-2); padding:.1em .4em; font-family:var(--font-mono); font-size:.85em; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="index.html">GRAVEL <span>DOSSIER</span></a>
+  <nav><a href="index.html">← Hub</a></nav>
+</header>
+
+<div class="upload-shell">
+  <div class="eyebrow">Für Kike &amp; Robbie</div>
+  <h1 style="font-size:2.1rem; margin-top:.4rem;">Foto hochladen</h1>
+  <p>Wähle das Rennen, mach ein Foto oder wähle eins aus der Galerie — es erscheint automatisch auf der jeweiligen Renn-Seite.</p>
+
+  <form id="upload-form">
+    <select id="race-select">
+      <option value="badlands2026">Badlands 2026</option>
+      <option value="veneto2026gravel">Veneto Gravel 2026</option>
+    </select>
+
+    <label class="drop" for="file-input">
+      <img id="preview" alt="Vorschau">
+      <span id="drop-text">📷 Antippen für Foto oder Galerie</span>
+      <span class="drop-label" id="file-name">Kein Bild gewählt</span>
+      <input type="file" id="file-input" accept="image/*" capture="environment">
+    </label>
+
+    <button type="submit" class="btn primary" style="width:100%; margin-top:1.4rem; justify-content:center;" id="submit-btn" disabled>Hochladen</button>
+    <progress id="progress" max="100" value="0"></progress>
+    <div class="status-msg" id="status-msg"></div>
+  </form>
+
+  <details class="setup">
+    <summary>⚙️ Setup (einmalig, nur für dich)</summary>
+    <ol>
+      <li>✓ Cloudinary-Account, Cloud-Name <code>c53b7kse</code> und unsigned Preset <code>gravel_live</code> sind schon eingerichtet.</li>
+      <li>✓ Die Einstellung, die getaggte Bilderlisten öffentlich per JSON abrufbar macht ("Resource list"), ist aktiviert — bei dir zu finden über Settings → Security, wenn auch mit aktuell anderer Bezeichnung als in der Cloudinary-Doku.</li>
+      <li>Fertig — jedes hochgeladene Foto erscheint automatisch in der passenden Galerie (Abfrage alle 5 Minuten).</li>
+    </ol>
+    <p style="font-size:.85rem;">Kostenloses Kontingent reicht für ein mehrtägiges Rennen mit vielen Handyfotos problemlos aus. Bilder werden vor dem Hochladen automatisch verkleinert/komprimiert.</p>
+  </details>
+
+  <p style="margin-top:2rem; font-size:.85rem; color:var(--text-faint);">Alternative ohne diese Seite: ein gemeinsames <em>Google Fotos-Album mit „automatisch hinzufügen“</em> funktioniert genauso als Fallback, wenn mal kein Empfang für den Upload hier ist — einfach beide parallel nutzen.</p>
+</div>
+
+<script>
+  var CLOUD_NAME = 'c53b7kse';
+  var UPLOAD_PRESET = 'gravel_live';
+
+  var fileInput = document.getElementById('file-input');
+  var preview = document.getElementById('preview');
+  var dropText = document.getElementById('drop-text');
+  var fileName = document.getElementById('file-name');
+  var submitBtn = document.getElementById('submit-btn');
+  var statusMsg = document.getElementById('status-msg');
+  var progress = document.getElementById('progress');
+  var form = document.getElementById('upload-form');
+  var raceSelect = document.getElementById('race-select');
+
+  var chosenBlob = null;
+
+  fileInput.addEventListener('change', function(){
+    var file = fileInput.files[0];
+    if (!file) return;
+    fileName.textContent = file.name;
+    dropText.textContent = '📷 Anderes Foto wählen';
+    var reader = new FileReader();
+    reader.onload = function(e){
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    resizeImage(file, 1600).then(function(blob){
+      chosenBlob = blob;
+      submitBtn.disabled = false;
+    });
+  });
+
+  // Bild vor dem Upload verkleinern — spart mobile Daten im Feld
+  function resizeImage(file, maxDim){
+    return new Promise(function(resolve){
+      var img = new Image();
+      var reader = new FileReader();
+      reader.onload = function(e){ img.src = e.target.result; };
+      img.onload = function(){
+        var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        var canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(function(blob){ resolve(blob || file); }, 'image/jpeg', 0.85);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    if (!chosenBlob) return;
+    submitBtn.disabled = true;
+    statusMsg.textContent = '';
+    statusMsg.className = 'status-msg';
+    progress.style.display = 'block';
+    progress.value = 0;
+
+    var fd = new FormData();
+    fd.append('file', chosenBlob);
+    fd.append('upload_preset', UPLOAD_PRESET);
+    fd.append('tags', raceSelect.value);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://api.cloudinary.com/v1_1/' + CLOUD_NAME + '/image/upload');
+    xhr.upload.onprogress = function(e){
+      if (e.lengthComputable) progress.value = (e.loaded / e.total) * 100;
+    };
+    xhr.onload = function(){
+      submitBtn.disabled = false;
+      progress.style.display = 'none';
+      if (xhr.status >= 200 && xhr.status < 300){
+        statusMsg.textContent = '✓ Hochgeladen — erscheint in wenigen Minuten in der Galerie.';
+        statusMsg.className = 'status-msg ok';
+        resetForm();
+      } else {
+        statusMsg.textContent = 'Fehler beim Hochladen. Nochmal versuchen?';
+        statusMsg.className = 'status-msg err';
+      }
+    };
+    xhr.onerror = function(){
+      submitBtn.disabled = false;
+      progress.style.display = 'none';
+      statusMsg.textContent = 'Kein Empfang gerade — später erneut versuchen.';
+      statusMsg.className = 'status-msg err';
+    };
+    xhr.send(fd);
+  });
+
+  function resetForm(){
+    form.reset();
+    preview.style.display = 'none';
+    fileName.textContent = 'Kein Bild gewählt';
+    dropText.textContent = '📷 Antippen für Foto oder Galerie';
+    chosenBlob = null;
+    submitBtn.disabled = true;
+  }
+</script>
+
+</body>
+</html>
