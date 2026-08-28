@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trainingsplan, letzte 12 Wochen</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #181818;
+    --border: #222222;
+    --accent: #e85a00;
+    --accent2: #f0a500;
+    --z2: #1a3a1a;
+    --z2-text: #5ecc5e;
+    --sweet: #1a2a3a;
+    --sweet-text: #5aaaf0;
+    --threshold: #2a1a2a;
+    --threshold-text: #cc66ff;
+    --vo2: #3a1a1a;
+    --vo2-text: #ff5555;
+    --rest: #1e1e1e;
+    --rest-text: #666;
+    --longride: #2a2000;
+    --longride-text: #f0c040;
+    --text: #e0e0e0;
+    --text-muted: #777;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a0800 50%, #0a0a0a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 48px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: 'BADLANDS';
+    position: absolute;
+    right: -20px;
+    top: -10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 140px;
+    color: rgba(232,90,0,0.04);
+    letter-spacing: -5px;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .race-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 52px;
+    line-height: 1;
+    letter-spacing: -1px;
+    color: #fff;
+  }
+  h1 span { color: var(--accent); }
+  .subtitle {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+
+  .goals-strip {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .goal-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    min-width: 120px;
+  }
+  .goal-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .goal-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1;
+  }
+  .goal-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* LEGEND */
+  .legend {
+    padding: 20px 48px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 400;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+
+  /* PHASE TABS */
+  .phase-nav {
+    display: flex;
+    gap: 0;
+    padding: 0 48px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+  }
+  .phase-btn {
+    padding: 14px 24px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .phase-btn:hover { color: var(--text); }
+  .phase-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* MAIN CONTENT */
+  .content {
+    padding: 32px 48px 48px;
+  }
+
+  .phase-block { display: none; }
+  .phase-block.active { display: block; }
+
+  .phase-header {
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    background: var(--surface2);
+    border-left: 4px solid var(--accent);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .phase-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .phase-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .phase-focus {
+    font-size: 12px;
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  /* TABLE */
+  .plan-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    table-layout: fixed;
+  }
+  .plan-table th {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .plan-table td {
+    padding: 10px 12px;
+    vertical-align: top;
+    border-bottom: 1px solid #161616;
+    line-height: 1.45;
+  }
+  .plan-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .week-cell {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .week-vol {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 400;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .tag-z2 { background: var(--z2); color: var(--z2-text); }
+  .tag-ss { background: var(--sweet); color: var(--sweet-text); }
+  .tag-thr { background: var(--threshold); color: var(--threshold-text); }
+  .tag-vo2 { background: var(--vo2); color: var(--vo2-text); }
+  .tag-long { background: var(--longride); color: var(--longride-text); }
+  .tag-rest { background: var(--rest); color: var(--rest-text); }
+  .tag-b2b { background: #2a1500; color: #ff8c00; }
+  .tag-night { background: #0f0f2a; color: #8888ff; }
+
+  .session {
+    margin-bottom: 4px;
+  }
+  .session:last-child { margin-bottom: 0; }
+
+  .session-time {
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+
+  .note-row td {
+    background: #0f1a0f !important;
+    color: #4a8a4a;
+    font-size: 11px;
+    font-style: italic;
+    padding: 6px 12px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .intensity-badge {
+    display: inline-flex;
+    gap: 3px;
+    margin-top: 2px;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .dot-z2 { background: var(--z2-text); }
+  .dot-ss { background: var(--sweet-text); }
+  .dot-thr { background: var(--threshold-text); }
+  .dot-vo2 { background: var(--vo2-text); }
+
+  /* SUMMARY BAR */
+  .week-summary {
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+  .summary-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+  .summary-item {
+    border-left: 2px solid var(--border);
+    padding-left: 12px;
+  }
+  .summary-item .val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .summary-item .lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* INTENSITY DISTRIBUTION */
+  .dist-bar {
+    display: flex;
+    height: 8px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+    gap: 1px;
+  }
+  .dist-z2 { background: var(--z2-text); }
+  .dist-ss { background: var(--sweet-text); }
+  .dist-thr { background: var(--threshold-text); }
+  .dist-vo2 { background: var(--vo2-text); }
+
+  /* COL WIDTHS */
+  .col-week { width: 70px; }
+  .col-mo { width: 13%; }
+  .col-di { width: 13%; }
+  .col-mi { width: 13%; }
+  .col-do { width: 13%; }
+  .col-fr { width: 13%; }
+  .col-sa { width: 14%; }
+  .col-so { width: 14%; }
+
+  /* FTP INPUT + ABSOLUTE ZONES */
+  .legend-abs-wrap {
+    border-top: 1px solid var(--border);
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .ftp-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .ftp-input-group label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  #ftpInput {
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    width: 76px;
+    padding: 4px 8px;
+    text-align: center;
+    outline: none;
+    border-radius: 2px;
+    -moz-appearance: textfield;
+  }
+  #ftpInput::-webkit-inner-spin-button,
+  #ftpInput::-webkit-outer-spin-button { -webkit-appearance: none; }
+  #ftpInput:focus { border-color: var(--accent2); }
+  .ftp-unit {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .legend-abs-zones {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .abs-item { gap: 6px; }
+  .abs-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface2);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 900px) {
+    .header, .legend, .phase-nav, .content { padding-left: 20px; padding-right: 20px; }
+    h1 { font-size: 36px; }
+    .plan-table { font-size: 11px; }
+    .plan-table td, .plan-table th { padding: 8px 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="race-tag">▶ Rennvorbereitung 2026</div>
+      <h1>BADLANDS <span>26</span></h1>
+      <div class="subtitle">12-Wochen-Trainingsplan · Coach McLean Low-Vol / High-Quality · Start: 2. Juni 2026 · Rennen: 30. Aug. 2026</div>
+    </div>
+    <div class="goals-strip">
+      <div class="goal-item">
+        <div class="goal-label">FTP Ziel</div>
+        <div class="goal-value">275–280<span style="font-size:14px;color:var(--text-muted)">W</span></div>
+        <div class="goal-sub">aktuell 263 W</div>
+      </div>
+      <div class="goal-item">
+        <div class="goal-label">VO₂max Ziel</div>
+        <div class="goal-value">60<span style="font-size:14px;color:var(--text-muted)"> ml/kg</span></div>
+        <div class="goal-sub">aktuell 58</div>
+      </div>
+      <div class="goal-item">
+        <div class="goal-label">Gewicht Renntag</div>
+        <div class="goal-value">70<span style="font-size:14px;color:var(--text-muted)">kg</span></div>
+        <div class="goal-sub">aktuell 74 kg</div>
+      </div>
+      <div class="goal-item">
+        <div class="goal-label">Zeitziel Brutto</div>
+        <div class="goal-value">&lt;60<span style="font-size:14px;color:var(--text-muted)">h</span></div>
+        <div class="goal-sub">2025: ~59h</div>
+      </div>
+      <div class="goal-item">
+        <div class="goal-label">W/kg Ziel</div>
+        <div class="goal-value">3,9<span style="font-size:14px;color:var(--text-muted)">W/kg</span></div>
+        <div class="goal-sub">aktuell 3,55</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--z2-text)"></div>Zone 2 (56–75% FTP)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--sweet-text)"></div>Sweet Spot (88–93% FTP)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--threshold-text)"></div>Threshold (95–105% FTP)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--vo2-text)"></div>VO₂max (106–120% FTP)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff8c00"></div>Back-to-Back Long</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#8888ff"></div>Nachtsimulation</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--rest-text)"></div>Ruhe / aktive Erholung</div>
+</div>
+
+<div class="legend legend-abs-wrap">
+  <div class="ftp-input-group">
+    <label for="ftpInput">Aktueller FTP</label>
+    <input type="number" id="ftpInput" value="263" min="100" max="500" step="1">
+    <span class="ftp-unit">W</span>
+  </div>
+  <div class="legend-abs-zones">
+    <div class="legend-item abs-item">
+      <div class="legend-dot" style="background:var(--z2-text)"></div>
+      <span>Zone 2 &nbsp;<span class="abs-val" id="az2"></span></span>
+    </div>
+    <div class="legend-item abs-item">
+      <div class="legend-dot" style="background:var(--sweet-text)"></div>
+      <span>Sweet Spot &nbsp;<span class="abs-val" id="ass"></span></span>
+    </div>
+    <div class="legend-item abs-item">
+      <div class="legend-dot" style="background:var(--threshold-text)"></div>
+      <span>Threshold &nbsp;<span class="abs-val" id="athr"></span></span>
+    </div>
+    <div class="legend-item abs-item">
+      <div class="legend-dot" style="background:var(--vo2-text)"></div>
+      <span>VO₂max &nbsp;<span class="abs-val" id="avo2"></span></span>
+    </div>
+  </div>
+</div>
+
+<div class="phase-nav">
+  <button class="phase-btn active" onclick="showPhase('p1')">Phase 1 · Wo 1–4<br><small>Basis & Sweet Spot</small></button>
+  <button class="phase-btn" onclick="showPhase('p2')">Phase 2 · Wo 5–8<br><small>Threshold & B2B</small></button>
+  <button class="phase-btn" onclick="showPhase('p3')">Phase 3 · Wo 9–11<br><small>VO₂max & Rennspez.</small></button>
+  <button class="phase-btn" onclick="showPhase('p4')">Phase 4 · Wo 12<br><small>Taper</small></button>
+</div>
+
+<div class="content">
+
+<!-- ==================== PHASE 1 ==================== -->
+<div id="p1" class="phase-block active">
+  <div class="phase-header">
+    <div>
+      <div class="phase-title">Phase 1 — Aerobe Basis & Sweet Spot Einführung</div>
+      <div class="phase-subtitle">Wochen 1–4 · 2. Juni – 29. Juni 2026</div>
+    </div>
+    <div>
+      <div class="phase-focus">🎯 Fokus: Aerobe Effizienz stärken · FTP-Fundament legen · Gewicht –1 kg</div>
+      <div class="phase-focus" style="color:var(--text-muted);font-size:11px;margin-top:4px;">Intensitätsverteilung: ~85% Z2 · ~15% Sweet Spot · 0% Threshold/VO₂max</div>
+    </div>
+  </div>
+
+  <table class="plan-table">
+    <thead>
+      <tr>
+        <th class="col-week">Woche</th>
+        <th class="col-mo">MO</th>
+        <th class="col-di">DI</th>
+        <th class="col-mi">MI</th>
+        <th class="col-do">DO</th>
+        <th class="col-fr">FR</th>
+        <th class="col-sa">SA</th>
+        <th class="col-so">SO</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- WOCHE 1 -->
+      <tr>
+        <td class="week-cell">W1<div class="week-vol">~13h</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span><br>Morgen: 1h<br><span class="session-time">Commute ~23km</span></div>
+          <div class="session"><span class="tag tag-z2">Z2</span><br>Nachm.: 1h<br><span class="session-time">Commute Z2</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span><br>Morgen: 1h<br><span class="session-time">Commute</span></div>
+          <div class="session"><span class="tag tag-ss">Sweet Spot</span><br>Nachm.: 1h<br><span class="session-time">2×15min @ 90% FTP<br>5min Pause</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span><br>Morgen: 1h</div>
+          <div class="session"><span class="tag tag-z2">Z2</span><br>Nachm.: 1h</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span><br>Morgen: 1h</div>
+          <div class="session"><span class="tag tag-ss">Sweet Spot</span><br>Nachm.: 1h<br><span class="session-time">2×15min @ 90% FTP</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span><br>Morgen: 1h</div>
+          <div class="session"><span class="tag tag-rest">Erholung</span><br>Nachm.: Beine hochlegen</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Long Ride</span><br>4h Z2<br><span class="session-time">Ruhige Pace<br>Ernährung üben:<br>60–70g Carbs/h</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">B2B</span><br>2,5h Z2<br><span class="session-time">Unter Ermüdung<br>bewusst Z2 halten</span></div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W1: Erstes Back-to-Back-Wochenende. Hauptziel: Sa+So zusammen 6,5h. Powernap-Training: täglich 20min Mittagsschlaf üben (Alarm auf 22min stellen).</td></tr>
+
+      <!-- WOCHE 2 -->
+      <tr>
+        <td class="week-cell">W2<div class="week-vol">~14h</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-ss">Sweet Spot</span><br>1,25h Nachm.<br><span class="session-time">3×12min @ 90% FTP<br>4min Pause</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1,25h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-ss">Sweet Spot</span><br>1,25h Nachm.<br><span class="session-time">3×12min @ 91% FTP</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">Aktiv</span> 45min locker</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Long Ride</span><br>4,5h Z2<br><span class="session-time">Steigung suchen<br>~500m/h Elevation</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">B2B</span><br>3h Z2<br><span class="session-time">Letzte Stunde:<br>2×10min SS-Finish</span></div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W2: SS-Intervalle von 2×15 auf 3×12 – kürzere Pausen, gleiche Qualität. Gewicht-Check: Kaloriendefizit ~200 kcal/Tag (nur an nicht-langen Tagen).</td></tr>
+
+      <!-- WOCHE 3 -->
+      <tr>
+        <td class="week-cell">W3<div class="week-vol">~15h</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-ss">Sweet Spot</span><br>1,25h Nachm.<br><span class="session-time">2×20min @ 90% FTP<br>5min Pause</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1,25h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-ss">Sweet Spot</span><br>1,25h Nachm.<br><span class="session-time">2×20min @ 91% FTP</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">Erholung</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Long Ride</span><br>5h Z2<br><span class="session-time">Inkl. 2h Anstiegsblock<br>bergauf Z2 halten</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">B2B</span><br>3h Z2<br><span class="session-time">Konstante Pace<br>RPE-Check</span></div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W3: 2×20min SS ist Kernintervall dieser Phase. Wochenlang-Anstieg simuliert Badlands-Gelände. Ernährung: 70–80g Carbs/h auf langen Fahrten trainieren.</td></tr>
+
+      <!-- WOCHE 4 – RECOVERY -->
+      <tr style="opacity:0.8">
+        <td class="week-cell" style="color:var(--rest-text)">W4<div class="week-vol">~10h<br>RECOVERY</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei</span> Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-ss">SS leicht</span><br>1h: 1×15min @ 88%</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Long leicht</span><br>3h Z2 Pace<br><span class="session-time">Erholung genießen</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-rest">Aktiv Erholung</span><br>1,5h Z1/Z2<br>oder kompletter Rest</div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W4: Bewusste Erholungswoche. Volumen –30%. Nur 1 SS-Einheit. Körper adaptiert hier! Gewicht-Check. FTP-Test vorbereiten: W5 Dienstag Ramp Test.</td></tr>
+
+    </tbody>
+  </table>
+
+  <div class="week-summary">
+    <div class="summary-title">Phase 1 · Wochenübersicht</div>
+    <div class="summary-grid">
+      <div class="summary-item"><div class="val">~52h</div><div class="lbl">Gesamtvolumen 4 Wochen</div></div>
+      <div class="summary-item"><div class="val">6–8</div><div class="lbl">SS-Einheiten gesamt</div></div>
+      <div class="summary-item"><div class="val">4×</div><div class="lbl">B2B-Wochenenden</div></div>
+      <div class="summary-item"><div class="val">~85%</div><div class="lbl">Z2-Anteil</div></div>
+      <div class="summary-item"><div class="val">–1 kg</div><div class="lbl">Gewichtsziel Phase 1</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PHASE 2 ==================== -->
+<div id="p2" class="phase-block">
+  <div class="phase-header">
+    <div>
+      <div class="phase-title">Phase 2 — Threshold-Aufbau & B2B-Spezifikation</div>
+      <div class="phase-subtitle">Wochen 5–8 · 30. Juni – 27. Juli 2026</div>
+    </div>
+    <div>
+      <div class="phase-focus">🎯 Fokus: FTP auf ~270W · B2B-Ausdauer steigern · Schlafstrategie trainieren</div>
+      <div class="phase-focus" style="color:var(--text-muted);font-size:11px;margin-top:4px;">Intensitätsverteilung: ~80% Z2 · ~12% Sweet Spot · ~8% Threshold</div>
+    </div>
+  </div>
+
+  <table class="plan-table">
+    <thead>
+      <tr>
+        <th class="col-week">Woche</th>
+        <th class="col-mo">MO</th>
+        <th class="col-di">DI</th>
+        <th class="col-mi">MI</th>
+        <th class="col-do">DO</th>
+        <th class="col-fr">FR</th>
+        <th class="col-sa">SA</th>
+        <th class="col-so">SO</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- WOCHE 5 -->
+      <tr>
+        <td class="week-cell">W5<div class="week-vol">~14h</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">Ramp Test</span><br>Nachm: FTP-Test<br><span class="session-time">Neues FTP → alle Zonen anpassen</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-thr">Threshold</span><br>1,25h Nachm.<br><span class="session-time">3×8min @ 100% FTP<br>4min Pause</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1,25h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-ss">Sweet Spot</span><br>1,25h: 2×20min @ 90%</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Long Ride</span><br>5h Z2<br><span class="session-time">Hügelig, 600m/h</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-b2b">B2B</span><br>3,5h Z2<br><span class="session-time">Letztes Drittel:<br>2×15min SS</span></div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W5: FTP-Ramp-Test Mo-Nachmittag. Alle nachfolgenden Zonen neu kalibrieren. Erste echte Threshold-Einheit Di: 3×8min, kurze Pausen!</td></tr>
+
+      <!-- WOCHE 6 -->
+      <tr>
+        <td class="week-cell">W6<div class="week-vol">~15h</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-thr">Threshold</span><br>1,25h Nachm.<br><span class="session-time">4×8min @ 100% FTP<br>3min Pause</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1,25h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-thr">Über/Unter</span><br>1,25h Nachm.<br><span class="session-time">4×(3min 108%/3min 85%)<br>= 8×6min Block</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Long Ride</span><br>5,5h Z2<br><span class="session-time">Terrain wechselnd</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-b2b">B2B</span><br>4h Z2<br><span class="session-time">Konstant Z2<br>unter Ermüdung</span></div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W6: Über/Unter-Intervalle Do = wichtigstes Workout. Simuliert Gravel-Pace-Wechsel (Anstieg/Abfahrt). B2B Sa+So = 9,5h, erster langer B2B-Block.</td></tr>
+
+      <!-- WOCHE 7 -->
+      <tr>
+        <td class="week-cell">W7<div class="week-vol">~15,5h</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-thr">Threshold</span><br>1,25h Nachm.<br><span class="session-time">2×15min @ 100% FTP<br>5min Pause</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1,25h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-ss">Sweet Spot</span><br>1,25h: 3×15min @ 91%</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-night">Nachtsimulation</span><br>Nachm. 22:00–01:00<br><span class="session-time">3h Z2, Schläfrigkeit<br>kennenlernen, Nap-Plan üben</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Long Ride</span><br>5h Z2<br><span class="session-time">Nach Nacht-Einheit!<br>Wie beim Rennen</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-b2b">B2B</span><br>3,5h Z2</div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W7: Erste Nachtsimulation Fr-Abend/Nacht, dann Sa morgen weiterfahren = simuliert Renntag-2-Szenario. Powernap 22min vor der Nachtfahrt einplanen.</td></tr>
+
+      <!-- WOCHE 8 – RECOVERY -->
+      <tr style="opacity:0.8">
+        <td class="week-cell" style="color:var(--rest-text)">W8<div class="week-vol">~10h<br>RECOVERY</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-thr">Threshold leicht</span><br>1h: 2×8min @ 98%</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Long leicht</span><br>3h Z2</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-rest">Aktiv/Rest</span><br>1,5h Z1</div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W8: Erholungswoche. FTP-Test W9 Di vorbereiten. Ziel jetzt: FTP ≥268W, Gewicht ≤72,5kg.</td></tr>
+
+    </tbody>
+  </table>
+
+  <div class="week-summary">
+    <div class="summary-title">Phase 2 · Wochenübersicht</div>
+    <div class="summary-grid">
+      <div class="summary-item"><div class="val">~55h</div><div class="lbl">Gesamtvolumen 4 Wochen</div></div>
+      <div class="summary-item"><div class="val">6</div><div class="lbl">Threshold-Einheiten</div></div>
+      <div class="summary-item"><div class="val">1×</div><div class="lbl">Nachtsimulation</div></div>
+      <div class="summary-item"><div class="val">~80%</div><div class="lbl">Z2-Anteil</div></div>
+      <div class="summary-item"><div class="val">–1,5 kg</div><div class="lbl">Gewichtsziel Phase 2</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PHASE 3 ==================== -->
+<div id="p3" class="phase-block">
+  <div class="phase-header">
+    <div>
+      <div class="phase-title">Phase 3 — VO₂max & Rennspezifische Simulation</div>
+      <div class="phase-subtitle">Wochen 9–11 · 28. Juli – 17. August 2026</div>
+    </div>
+    <div>
+      <div class="phase-focus">🎯 Fokus: VO₂max auf 60 · 24h-Sim · Hitzeanpassung · Sleep Banking einleiten</div>
+      <div class="phase-focus" style="color:var(--text-muted);font-size:11px;margin-top:4px;">Intensitätsverteilung: ~80% Z2 · ~8% Sweet Spot · ~7% Threshold · ~5% VO₂max</div>
+    </div>
+  </div>
+
+  <table class="plan-table">
+    <thead>
+      <tr>
+        <th class="col-week">Woche</th>
+        <th class="col-mo">MO</th>
+        <th class="col-di">DI</th>
+        <th class="col-mi">MI</th>
+        <th class="col-do">DO</th>
+        <th class="col-fr">FR</th>
+        <th class="col-sa">SA</th>
+        <th class="col-so">SO</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- WOCHE 9 -->
+      <tr>
+        <td class="week-cell">W9<div class="week-vol">~15h</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">Ramp Test</span><br>FTP-Test Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-vo2">VO₂max</span><br>1,25h Nachm.<br><span class="session-time">6×3min @ 115% FTP<br>3min Pause</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1,25h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-thr">Threshold</span><br>1,25h: 2×15min @ 100%</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei / Sauna</span><br><span class="session-time">30min Sauna → Hitzeanpassung</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Long Ride</span><br>5h Z2<br><span class="session-time">Heiß, mittags, Hitze üben<br>Kühlung-Strategie testen</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-b2b">B2B</span><br>4h Z2<br><span class="session-time">inkl. 2×15min SS</span></div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W9: Zweiter FTP-Test. Ziel: ≥270W. Erste VO₂max-Einheiten Di: 6×3min @ 115%. Hitzeanpassung ab jetzt: Fr Sauna (3×10min), Sa Outdoor mittags fahren.</td></tr>
+
+      <!-- WOCHE 10 -->
+      <tr>
+        <td class="week-cell">W10<div class="week-vol">~15h</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-vo2">VO₂max</span><br>1,25h Nachm.<br><span class="session-time">5×4min @ 112% FTP<br>4min Pause</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1,25h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-thr">Über/Unter</span><br>1,25h:<br><span class="session-time">5×(3min 108%/3min 84%)</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei / Sauna</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-night">24h-Simulation!</span><br>Sa 18:00 Start<br><span class="session-time">→ 12h Fahrt mit Powernap-Protokoll<br>Nap 01:00 (22min)<br>Nap 05:00 (22min)<br>→ Weiter bis So 06:00</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-b2b">B2B Erholung</span><br>So 10:00–14:00<br>4h Z2 Erholungsfahrt<br><span class="session-time">Simuliert Tag 2 nach Nacht</span></div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W10: WICHTIGSTE WOCHE. Sa/So: 12h+ Nacht-Simulation mit echtem Powernap-Protokoll. Teste: Koffein-Timing, Verpflegung, Ausrüstung, Schläfrigkeit. Danach: Recovery-Priorität.</td></tr>
+
+      <!-- WOCHE 11 -->
+      <tr>
+        <td class="week-cell">W11<div class="week-vol">~14h</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-vo2">VO₂max</span><br>1,25h Nachm.<br><span class="session-time">8×2min @ 120% FTP<br>2min Pause</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1,25h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-ss">Sweet Spot</span><br>1,25h: 2×20min @ 90%</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei / Sauna</span><br><span class="session-time">Letzte Sauna-Session</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Long Ride</span><br>5h Z2<br><span class="session-time">Race-Simulation-Pace<br>Ausrüstung final testen</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-b2b">B2B</span><br>3h Z2<br><span class="session-time">Letzte lange Einheit<br>vor Taper</span></div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W11: Letzte harte Woche. Sa: Alle Ausrüstungsgegenstände im Einsatz testen (Nutrition, Licht, GPS). So: letzter B2B. Ab Montag W12 → Taper-Modus.</td></tr>
+
+    </tbody>
+  </table>
+
+  <div class="week-summary">
+    <div class="summary-title">Phase 3 · Wochenübersicht</div>
+    <div class="summary-grid">
+      <div class="summary-item"><div class="val">~44h</div><div class="lbl">Gesamtvolumen 3 Wochen</div></div>
+      <div class="summary-item"><div class="val">3</div><div class="lbl">VO₂max-Einheiten</div></div>
+      <div class="summary-item"><div class="val">1×</div><div class="lbl">12h Nacht-Simulation</div></div>
+      <div class="summary-item"><div class="val">3×</div><div class="lbl">Sauna-Hitzeadapt.</div></div>
+      <div class="summary-item"><div class="val">–1,5 kg</div><div class="lbl">Gewichtsziel Phase 3</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PHASE 4 TAPER ==================== -->
+<div id="p4" class="phase-block">
+  <div class="phase-header">
+    <div>
+      <div class="phase-title">Phase 4 — Taper & Race Preparation</div>
+      <div class="phase-subtitle">Woche 12 · 18.–30. August 2026 · Rennen: 30. August</div>
+    </div>
+    <div>
+      <div class="phase-focus">🎯 Fokus: Frisch ans Start · Sleep Banking · Mentale Vorbereitung · Logistik</div>
+      <div class="phase-focus" style="color:var(--text-muted);font-size:11px;margin-top:4px;">Volumen –40% · Intensität erhalten · Keine neuen Reize</div>
+    </div>
+  </div>
+
+  <table class="plan-table">
+    <thead>
+      <tr>
+        <th class="col-week">Datum</th>
+        <th class="col-mo">MO 18.8.</th>
+        <th class="col-di">DI 19.8.</th>
+        <th class="col-mi">MI 20.8.</th>
+        <th class="col-do">DO 21.8.</th>
+        <th class="col-fr">FR 22.8.</th>
+        <th class="col-sa">SA 23.8.</th>
+        <th class="col-so">SO 24.8.</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="week-cell">W12a<div class="week-vol">~9h</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Nachm.</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-thr">Threshold</span><br>1h: 2×8min @ 100%<br><span class="session-time">Zonen spüren, nicht kämpfen</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-vo2">VO₂max kurz</span><br>45min: 4×2min @ 115%</div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 1h Morgen</div>
+          <div class="session"><span class="tag tag-rest">frei<br>→ Sleep Banking beginnt<br>Ziel: 9h/Nacht</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-long">Letzte Long</span><br>3h Z2<br><span class="session-time">Entspannt, Ausrüstung<br>final packen</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 2h locker<br><span class="session-time">Abreise nach Granada<br>vorbereiten</span></div>
+        </td>
+      </tr>
+      <tr class="note-row"><td colspan="8">📝 W12a: Letzte Woche mit echter Intensität. Di + Do: kurze Sharpening-Einheiten. Ab Fr: Sleep Banking beginnt — 9h Schlaf/Nacht absolute Priorität.</td></tr>
+    </tbody>
+  </table>
+
+  <table class="plan-table" style="margin-top:20px">
+    <thead>
+      <tr>
+        <th class="col-week">Datum</th>
+        <th>MO 25.8.</th>
+        <th>DI 26.8.</th>
+        <th>MI 27.8.</th>
+        <th>DO 28.8.</th>
+        <th>FR 29.8.</th>
+        <th colspan="2">SA 30.8. — RACE DAY 🔥</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="week-cell" style="color:var(--accent)">W12b<div class="week-vol">Taper<br>Final</div></td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 45min<br><span class="session-time">Locker. Beine spüren.</span></div>
+          <div class="session"><span class="tag tag-rest">Nachmittag frei</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 45min<br><span class="session-time">Inkl. 3×1min Accelerations<br>Beine aktivieren</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Z2</span> 30min<br><span class="session-time">Easy spin. Anreise Granada.</span></div>
+          <div class="session"><span class="tag tag-rest">Kontrolle Ausrüstung</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-rest">RUHETAG</span><br><span class="session-time">Bike-Check. Briefing.<br>Race-Verpfl. final planen.<br>22:00 ins Bett</span></div>
+        </td>
+        <td>
+          <div class="session"><span class="tag tag-z2">Activation</span><br>20–30min<br><span class="session-time">Legte Einroll-Spin<br>inkl. 2×30s Efforts</span></div>
+          <div class="session"><span class="tag tag-rest">Frühes Abendessen 18:00<br>Schlafen 20:00</span></div>
+        </td>
+        <td colspan="2" style="background: linear-gradient(135deg, #1a0800, #2a0f00); border-left: 3px solid var(--accent);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--accent);margin-bottom:8px;">🏁 START: 30. August, Granada</div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.7">
+            800km · +16.000m · Ziel: &lt;60h brutto<br>
+            <span style="color:var(--accent2)">Nap-Strategie:</span> 22min @ ~01:00, ~05:00, ~13:00 (Tag 2)<br>
+            <span style="color:var(--accent2)">Koffein:</span> 6h vor Nap stoppen → Nappuccino beim Aufwachen<br>
+            <span style="color:var(--accent2)">Ernährung:</span> 80–90g Carbs/h · Salztabs · Real Food in Dörfern<br>
+            <span style="color:var(--accent2)">Pacing:</span> Erste 3h diszipliniert Z2/Z3 — NICHT mit der Gruppe
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="week-summary">
+    <div class="summary-title">Taper-Schlüsselregeln</div>
+    <div class="summary-grid">
+      <div class="summary-item"><div class="val">9h</div><div class="lbl">Schlaf/Nacht ab 22.8.</div></div>
+      <div class="summary-item"><div class="val">–40%</div><div class="lbl">Volumenreduktion Taper</div></div>
+      <div class="summary-item"><div class="val">70 kg</div><div class="lbl">Zielgewicht Startlinie</div></div>
+      <div class="summary-item"><div class="val">≥275W</div><div class="lbl">Ziel-FTP Renntag</div></div>
+      <div class="summary-item"><div class="val">3×22min</div><div class="lbl">Max. Naps beim Rennen</div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end content -->
+
+<script>
+function showPhase(id) {
+  document.querySelectorAll('.phase-block').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx = {p1:0, p2:1, p3:2, p4:3}[id];
+  document.querySelectorAll('.phase-btn')[idx].classList.add('active');
+}
+
+function updateZones() {
+  const ftp = parseInt(document.getElementById('ftpInput').value) || 263;
+  const r = (lo, hi) => `${Math.round(ftp * lo)}–${Math.round(ftp * hi)} W`;
+  document.getElementById('az2').textContent  = r(0.56, 0.75);
+  document.getElementById('ass').textContent  = r(0.88, 0.93);
+  document.getElementById('athr').textContent = r(0.95, 1.05);
+  document.getElementById('avo2').textContent = r(1.06, 1.20);
+}
+
+document.getElementById('ftpInput').addEventListener('input', updateZones);
+updateZones();
+</script>
+</body>
+</html>
