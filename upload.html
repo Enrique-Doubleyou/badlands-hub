@@ -31,6 +31,13 @@
   details.setup summary{ cursor:pointer; font-family:var(--font-mono); font-size:.8rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim); }
   details.setup ol{ color:var(--text-dim); padding-left:1.2rem; }
   details.setup code{ background:var(--panel-2); padding:.1em .4em; font-family:var(--font-mono); font-size:.85em; }
+  #lock-screen{ max-width:320px; margin:3rem auto; text-align:center; }
+  #lock-screen input{
+    width:100%; background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    font-family:var(--font-mono); font-size:1.4rem; letter-spacing:.3em; text-align:center;
+    padding:.8em; margin:1rem 0; border-radius:4px;
+  }
+  #pin-error{ font-family:var(--font-mono); font-size:.82rem; color:var(--rust); min-height:1.4em; margin-top:.4rem; }
 </style>
 </head>
 <body>
@@ -40,10 +47,19 @@
   <nav><a href="index.html">← Hub</a></nav>
 </header>
 
-<div class="upload-shell">
-  <div class="eyebrow">Für Kike &amp; Robbie</div>
+<div id="lock-screen">
+  <div class="eyebrow">Privat</div>
+  <h1 style="font-size:1.6rem; margin-top:.4rem;">PIN eingeben</h1>
+  <p style="font-size:.85rem; color:var(--text-faint);">Einmalig auf diesem Gerät — danach nicht mehr nötig.</p>
+  <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="••••">
+  <button class="btn primary" id="pin-submit" style="width:100%; justify-content:center;">Freischalten</button>
+  <div id="pin-error"></div>
+</div>
+
+<div class="upload-shell" id="upload-content" hidden>
+  <div class="eyebrow">Nur für mich</div>
   <h1 style="font-size:2.1rem; margin-top:.4rem;">Foto hochladen</h1>
-  <p>Wähle das Rennen, mach ein Foto oder wähle eins aus der Galerie — es erscheint automatisch auf der jeweiligen Renn-Seite.</p>
+  <p>Rennen wählen, Foto machen oder aus der Galerie wählen — es erscheint automatisch auf der jeweiligen Renn-Seite.</p>
 
   <form id="upload-form">
     <select id="race-select">
@@ -77,6 +93,41 @@
 </div>
 
 <script>
+  // Einfache PIN-Sperre — keine echte Sicherheit, nur um Zufallsbesucher fernzuhalten.
+  // PIN unten ändern. Nach einmaliger Eingabe merkt sich der Browser das dauerhaft (localStorage).
+  var PIN = '2608';                          // TODO: eigene PIN eintragen
+  var LOCK_KEY = 'gravel.uploadUnlocked.v1';
+
+  var lockScreen = document.getElementById('lock-screen');
+  var uploadContent = document.getElementById('upload-content');
+  var pinInput = document.getElementById('pin-input');
+  var pinError = document.getElementById('pin-error');
+
+  function unlock(){
+    lockScreen.hidden = true;
+    uploadContent.hidden = false;
+  }
+
+  if (localStorage.getItem(LOCK_KEY) === '1'){
+    unlock();
+  } else {
+    lockScreen.hidden = false;
+  }
+
+  document.getElementById('pin-submit').addEventListener('click', function(){
+    if (pinInput.value === PIN){
+      localStorage.setItem(LOCK_KEY, '1');
+      unlock();
+    } else {
+      pinError.textContent = 'Falsche PIN';
+      pinInput.value = '';
+      pinInput.focus();
+    }
+  });
+  pinInput.addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter') document.getElementById('pin-submit').click();
+  });
+
   var CLOUD_NAME = 'c53b7kse';
   var UPLOAD_PRESET = 'gravel_live';
 
