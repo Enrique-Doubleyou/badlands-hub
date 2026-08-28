@@ -69,9 +69,9 @@
 
     <label class="drop" for="file-input">
       <img id="preview" alt="Vorschau">
-      <span id="drop-text">📷 Antippen für Foto oder Galerie</span>
+      <span id="drop-text">📷 Antippen zur Bildauswahl</span>
       <span class="drop-label" id="file-name">Kein Bild gewählt</span>
-      <input type="file" id="file-input" accept="image/*" capture="environment">
+      <input type="file" id="file-input" accept="image/*">
     </label>
 
     <button type="submit" class="btn primary" style="width:100%; margin-top:1.4rem; justify-content:center;" id="submit-btn" disabled>Hochladen</button>
@@ -222,7 +222,7 @@
     form.reset();
     preview.style.display = 'none';
     fileName.textContent = 'Kein Bild gewählt';
-    dropText.textContent = '📷 Antippen für Foto oder Galerie';
+    dropText.textContent = '📷 Antippen zur Bildauswahl';
     chosenBlob = null;
     submitBtn.disabled = true;
   }
