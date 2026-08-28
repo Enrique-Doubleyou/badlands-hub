@@ -65,7 +65,11 @@ footer {
   text-align: center;
   padding: 1rem;
   color:var(--muted-global);
+  background: rgba(255,255,255,.55);
+  border-radius: 12px;
+  margin: 1rem 12px 2rem;
 }
+@media(prefers-color-scheme:dark){ footer{ background: rgba(11,13,16,.55); } }
 #counter {
   font-size: 0.9em;
   margin-top: 1em;
@@ -169,7 +173,7 @@ background:#ffffff;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.12);fo
 }
 body{
 background-image:
-  linear-gradient(180deg, rgba(243,230,207,.90) 0%, rgba(234,217,189,.90) 55%, rgba(239,246,248,.94) 100%),
+  linear-gradient(180deg, rgba(243,230,207,.40) 0%, rgba(234,217,189,.40) 55%, rgba(239,246,248,.55) 100%),
   url('badlands-bg.jpg');
 background-size: cover;
 background-position: center top;
@@ -179,7 +183,7 @@ background-repeat: no-repeat;
 @media(prefers-color-scheme:dark){
 body{
 background-image:
-  linear-gradient(180deg, rgba(43,36,29,.90) 0%, rgba(52,43,35,.90) 55%, rgba(20,26,31,.94) 100%),
+  linear-gradient(180deg, rgba(43,36,29,.45) 0%, rgba(52,43,35,.45) 55%, rgba(20,26,31,.6) 100%),
   url('badlands-bg.jpg');
 }
 }
@@ -187,7 +191,8 @@ background-image:
 body{ background-attachment: scroll; }
 }
 a{ color: var(--sea); }
-.keynote{max-width:62ch;margin:.75rem auto 1rem;text-align:center;line-height:1.5;padding:0 12px}
+.keynote{max-width:62ch;margin:.75rem auto 1rem;text-align:center;line-height:1.5;padding:.5rem 1rem;background:rgba(255,255,255,.55);border-radius:12px}
+@media(prefers-color-scheme:dark){.keynote{background:rgba(11,13,16,.55)}}
 @media (max-width:480px){.keynote{font-size:.98rem}}
 .responsive-frame{width:100%;aspect-ratio:16/9;border:0}
 .mini-prev{display:flex;justify-content:center;margin:.5rem 0 1rem}
