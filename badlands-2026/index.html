@@ -16,15 +16,11 @@ body {
 }
 header {
   width: 100%;
-  min-height: 46vh;
-  max-height: 520px;
-  background-image: url('start-foto.jpg');
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
 }
-@media (min-width: 720px){
-  header{ min-height: 38vh; }
+header img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 main {
   padding: 1rem;
@@ -307,9 +303,6 @@ h2{ text-align:center; }
 .fab-pill{ padding:.45rem .6rem; }
 }
 @media (max-width:360px){.bildergalerie{grid-template-columns:repeat(auto-fit,minmax(100px,1fr))}}
-@media (prefers-color-scheme:dark){
-body{ background:linear-gradient(180deg, var(--sand) 0%, var(--dune) 60%, #141a1f 100%); }
-}
 .setup-media{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:.6rem}
 .setup-media figure{margin:0}
 .setup-media img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
@@ -360,8 +353,8 @@ box-shadow: 0 10px 28px rgba(0,0,0,.5); }
 <a class="fab-pill" href="#badlands2025-prev" aria-label="Zum Rückblick 2025">← <span>2025</span></a>
 </div>
 
-<header role="img" aria-label="Kike mit Gravel-Bike vor dem Badlands-2026-Streckenplakat in Granada">
-<!-- Hintergrundbild wird per CSS gesetzt (background-image), damit es sauber skaliert -->
+<header>
+<img src="start-foto.jpg" alt="Kike mit Gravel-Bike vor dem Badlands-2026-Streckenplakat in Granada">
 </header>
 
 <main>
